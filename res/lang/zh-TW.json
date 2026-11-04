@@ -195,6 +195,13 @@
     },
     "plugin": {
         "prop_user_variable": "用戶變量",
+        "web_login": "網頁登入",
+        "web_login_hint": "在彈出的視窗裡登入（可掃碼），成功後會自動填入下面的輸入框",
+        "web_login_success": "已取得登入資訊，點確認儲存後生效",
+        "web_login_window_title": "登入{{platform}}（完成後本視窗自動關閉）",
+        "web_login_success_with_account": "已登入「{{account}}」，點確認儲存後生效",
+        "web_login_timeout": "等待登入逾時，請重試",
+        "web_login_failed": "登入沒有完成，可再試一次或手動貼上 Cookie",
         "method_search": "搜尋",
         "method_import_music_item": "導入歌曲",
         "method_import_music_sheet": "導入歌單",

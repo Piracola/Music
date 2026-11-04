@@ -15,6 +15,7 @@ import type {
     IGetMediaSourceResult,
     IPluginCacheData,
     IPluginMetaAll,
+    IWebLoginResult,
 } from '@appTypes/infra/pluginManager';
 import {
     IPC_CALL_PLUGIN_METHOD,
@@ -29,6 +30,7 @@ import {
     IPC_PLUGIN_LIST_CHANGED,
     IPC_GET_LYRIC,
     IPC_GET_MEDIA_SOURCE,
+    IPC_WEB_LOGIN,
     PLUGIN_CACHE_FILE_NAME,
     CONTEXT_BRIDGE_KEY,
 } from './common/constant';
@@ -106,6 +108,11 @@ async function getMediaSource(
     return ipcRenderer.invoke(IPC_GET_MEDIA_SOURCE, params);
 }
 
+/** 打开网页登录窗口；成功后返回抓到的 Cookie */
+async function openWebLogin(platform: string): Promise<IWebLoginResult> {
+    return ipcRenderer.invoke(IPC_WEB_LOGIN, platform);
+}
+
 // ─── 事件监听（支持多回调） ───
 
 type PluginListChangedCallback = (plugins: IPlugin.IPluginDelegate[]) => void;
@@ -144,6 +151,7 @@ const mod = {
     getCachedPlugins,
     getLyric,
     getMediaSource,
+    openWebLogin,
     onPluginListChanged,
 };
 

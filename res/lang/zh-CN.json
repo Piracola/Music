@@ -195,6 +195,13 @@
     },
     "plugin": {
         "prop_user_variable": "用户变量",
+        "web_login": "网页登录",
+        "web_login_hint": "在弹出的窗口里登录（可扫码），成功后会自动填入下面的输入框",
+        "web_login_success": "已获取登录信息，点确认保存后生效",
+        "web_login_window_title": "登录{{platform}}（完成后本窗口自动关闭）",
+        "web_login_success_with_account": "已登录「{{account}}」，点确认保存后生效",
+        "web_login_timeout": "等待登录超时，请重试",
+        "web_login_failed": "登录没有完成，可再试一次或手动粘贴 Cookie",
         "method_search": "搜索",
         "method_import_music_item": "导入单曲",
         "method_import_music_sheet": "导入歌单",

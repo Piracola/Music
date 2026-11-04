@@ -42,6 +42,9 @@ export const IPC_GET_LYRIC = '@infra/plugin-manager/get-lyric';
 /** getMediaSource 适配器（主进程处理，含音质回退和重试） */
 export const IPC_GET_MEDIA_SOURCE = '@infra/plugin-manager/get-media-source';
 
+/** 网页登录窗口（主进程开窗抓 Cookie，交给渲染层填用户变量） */
+export const IPC_WEB_LOGIN = '@infra/plugin-manager/web-login';
+
 // ─── 路径常量 ───
 
 /** 插件 JS 文件存储目录名 */

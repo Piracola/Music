@@ -225,6 +225,31 @@
         margin-left: var(--space-2);
     }
 
+    // ── 网页登录（免手抄 Cookie） ──
+
+    &__web-login {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-2);
+        padding: var(--space-3);
+        margin-bottom: var(--space-4);
+        border-radius: var(--radius-card);
+        background: var(--color-fill-subtle);
+    }
+
+    &__web-login-row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: var(--space-2) var(--space-3);
+    }
+
+    &__web-login-hint {
+        font-size: var(--text-caption-size);
+        color: var(--color-text-muted);
+        line-height: var(--text-caption-leading);
+    }
+
     // ── Markdown 渲染 ──
 
     &__markdown {

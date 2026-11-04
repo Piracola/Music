@@ -195,6 +195,13 @@
     },
     "plugin": {
         "prop_user_variable": "User Variable",
+        "web_login": "Sign in via web",
+        "web_login_hint": "Sign in (QR code supported) in the window that opens — the result is filled in below",
+        "web_login_success": "Credentials captured — click Confirm to save",
+        "web_login_window_title": "Sign in to {{platform}} (this window closes automatically)",
+        "web_login_success_with_account": "Signed in as {{account}} — click Confirm to save",
+        "web_login_timeout": "Sign-in timed out, please try again",
+        "web_login_failed": "Sign-in did not complete — try again or paste the cookie manually",
         "method_search": "Search",
         "method_import_music_item": "Import Song",
         "method_import_music_sheet": "Import Playlist",

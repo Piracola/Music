@@ -56,3 +56,16 @@ export interface IPluginCacheData {
 
 /** 插件元信息存储结构 */
 export type IPluginMetaAll = Record<string, IPlugin.IPluginMeta>;
+
+/** 网页登录结果 */
+export interface IWebLoginResult {
+    success: boolean;
+    /** 过滤后的 Cookie 串 */
+    cookie?: string;
+    /** 账号 uid（用于提示文案） */
+    uid?: string;
+    /** 账号昵称（用于提示文案） */
+    nickname?: string;
+    /** cancelled = 用户关窗；timeout = 等待超时；unsupported = 该平台未接入；其余为具体错误 */
+    message?: string;
+}

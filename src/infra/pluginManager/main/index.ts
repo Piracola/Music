@@ -13,12 +13,16 @@
 
 import fs from 'fs';
 import path from 'path';
-import { ipcMain } from 'electron';
+import { BrowserWindow, ipcMain } from 'electron';
 import { nanoid } from 'nanoid';
 import { compare } from 'compare-versions';
 import axios from 'axios';
 import type { IWindowManager } from '@appTypes/main/windowManager';
-import type { ICallPluginMethodParams, IPluginMetaAll } from '@appTypes/infra/pluginManager';
+import type {
+    ICallPluginMethodParams,
+    IPluginMetaAll,
+    IWebLoginResult,
+} from '@appTypes/infra/pluginManager';
 import {
     IPC_CALL_PLUGIN_METHOD,
     IPC_INSTALL_PLUGIN,
@@ -32,6 +36,7 @@ import {
     IPC_PLUGIN_LIST_CHANGED,
     IPC_GET_LYRIC,
     IPC_GET_MEDIA_SOURCE,
+    IPC_WEB_LOGIN,
     PLUGIN_DIR_NAME,
     PLUGIN_CACHE_FILE_NAME,
     PLUGIN_META_FILE_NAME,
@@ -49,6 +54,8 @@ import type { IMediaMetaProvider } from '@appTypes/infra/mediaMeta';
 import type { IMusicItemProvider } from '@appTypes/infra/musicSheet';
 import { getLyricAdapter, type IGetLyricParams } from './getLyricAdapter';
 import { getMediaSourceAdapter, type IGetMediaSourceAdapterParams } from './getMediaSourceAdapter';
+import { openWebLogin } from './webLogin';
+import { findWebLoginPreset } from '../common/webLoginPresets';
 
 /** 已加载的插件记录 */
 interface ILoadedPlugin {
@@ -76,6 +83,9 @@ class PluginManager {
 
     /** 插件 meta（排序、用户变量） */
     private pluginMeta: IPluginMetaAll = {};
+
+    /** 进行中的网页登录（防重复开窗） */
+    private webLoginInFlight: Promise<IWebLoginResult> | null = null;
 
     /** 插件目录路径 */
     private pluginBasePath = '';
@@ -276,6 +286,23 @@ class PluginManager {
             return getMediaSourceAdapter({ ...params, hash: resolvedHash }, (p) =>
                 this.callPluginMethod(p),
             );
+        });
+
+        // 网页登录：开窗加载官方登录页，抓回 Cookie 交给渲染层填进用户变量
+        ipcMain.handle(IPC_WEB_LOGIN, async (evt, platform: string) => {
+            const preset = findWebLoginPreset(platform);
+            if (!preset) {
+                return { success: false, message: 'unsupported' };
+            }
+            // 同一时间只允许一个登录窗：重复点击直接复用当前这次的结果
+            if (this.webLoginInFlight) return this.webLoginInFlight;
+
+            const parent = BrowserWindow.fromWebContents(evt.sender);
+            const task = openWebLogin(preset, parent).finally(() => {
+                this.webLoginInFlight = null;
+            });
+            this.webLoginInFlight = task;
+            return task;
         });
     }
 

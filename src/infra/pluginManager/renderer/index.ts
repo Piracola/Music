@@ -14,6 +14,7 @@ import type {
     IGetMediaSourceParams,
     IGetMediaSourceResult,
     IPluginMetaAll,
+    IWebLoginResult,
 } from '@appTypes/infra/pluginManager';
 import { CONTEXT_BRIDGE_KEY } from '../common/constant';
 import { sortByPluginOrder } from '../common/sortByOrder';
@@ -38,6 +39,7 @@ interface IMod {
     getMediaSource(
         params: IGetMediaSourceParams & { hash: string },
     ): Promise<IGetMediaSourceResult | null>;
+    openWebLogin(platform: string): Promise<IWebLoginResult>;
     onPluginListChanged(callback: (plugins: IPlugin.IPluginDelegate[]) => void): () => void;
 }
 
@@ -273,6 +275,14 @@ function getPluginPrimaryKey(pluginItem: { platform?: string }): string[] {
     return store.get(pluginsAtom).find((p) => p.platform === pluginItem.platform)?.primaryKey ?? [];
 }
 
+/**
+ * 打开网页登录窗口，拿回登录态 Cookie。
+ * 主进程负责开窗与抓取，成功后调用方把 cookie 写进插件的用户变量即可。
+ */
+async function openWebLogin(platform: string): Promise<IWebLoginResult> {
+    return mod.openWebLogin(platform);
+}
+
 // ─── Adapters ───
 
 /** 适配器命名空间，封装需要额外业务逻辑的方法 */
@@ -334,6 +344,7 @@ const pluginManager = {
     getSortedSearchablePlugins,
     isSupportFeatureMethod,
     getPluginPrimaryKey,
+    openWebLogin,
     adapters,
 };
 
