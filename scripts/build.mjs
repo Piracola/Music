@@ -15,7 +15,16 @@
  *   node scripts/build.mjs all        插件 + 应用
  */
 import { spawn, execFileSync } from 'node:child_process';
-import { existsSync, readdirSync, statSync } from 'node:fs';
+import {
+    existsSync,
+    mkdirSync,
+    readFileSync,
+    readdirSync,
+    renameSync,
+    rmSync,
+    statSync,
+    writeFileSync,
+} from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
 import { fileURLToPath } from 'node:url';
@@ -144,18 +153,97 @@ async function buildApp() {
     return ok;
 }
 
-async function buildInstaller() {
-    const ok = await step('打包安装包（electron-forge make）', 'pnpm', ['run', 'make']);
-    if (ok && existsSync(path.join(ROOT, 'out', 'make'))) {
-        console.log(dim('  产物：out/make'));
+/**
+ * 找 Inno Setup 的编译器。
+ * 这仓库的 forge 配置里只有 dmg/deb/rpm（Linux/macOS 用），Windows 的安装包是
+ * CI 里用 Inno Setup 跑的（见 .github/workflows/build.yml），所以本地也走同一条路。
+ */
+function findIscc() {
+    const candidates = [
+        process.env.ISCC_PATH,
+        path.join(process.env.ProgramFiles ?? '', 'Inno Setup 6', 'ISCC.exe'),
+        path.join(process.env['ProgramFiles(x86)'] ?? '', 'Inno Setup 6', 'ISCC.exe'),
+        path.join(process.env.LOCALAPPDATA ?? '', 'Programs', 'Inno Setup 6', 'ISCC.exe'),
+    ].filter(Boolean);
+    return candidates.find((candidate) => existsSync(candidate)) ?? null;
+}
+
+function readAppVersion() {
+    try {
+        const raw = readFileSync(path.join(ROOT, 'package.json'), 'utf8');
+        return JSON.parse(raw).version ?? '0.0.0';
+    } catch {
+        return '0.0.0';
     }
+}
+
+/** 便携版：和 CI 一致，放一个 .portable 标记再压成 zip */
+async function buildPortable(version) {
+    const appDir = path.join(ROOT, 'out', 'MusicFree-win32-x64');
+    if (!existsSync(appDir)) {
+        console.log(red('  没找到 out/MusicFree-win32-x64，先构建应用'));
+        return false;
+    }
+    const markerDir = path.join(appDir, 'portable');
+    mkdirSync(markerDir, { recursive: true });
+    writeFileSync(path.join(markerDir, '.portable'), '');
+
+    const zipPath = path.join(ROOT, 'out', `MusicFree-${version}-win32-x64-portable.zip`);
+    rmSync(zipPath, { force: true });
+    const ok = await step('打包便携版（zip）', 'tar', [
+        '-a',
+        '-c',
+        '-f',
+        zipPath,
+        '-C',
+        path.join(ROOT, 'out'),
+        'MusicFree-win32-x64',
+    ]);
+    if (ok) console.log(dim(`  产物：out/${path.basename(zipPath)}`));
     return ok;
+}
+
+async function buildInstaller() {
+    if (!(await buildApp())) return false;
+
+    const version = readAppVersion();
+    const iscc = findIscc();
+    let installerOk = false;
+
+    if (!iscc) {
+        console.log('');
+        console.log(yellow('  没找到 Inno Setup（ISCC.exe），这次只出便携版'));
+        console.log(dim('  想要 .exe 安装包：装一个 Inno Setup 6，或用 ISCC_PATH 指定路径'));
+    } else {
+        installerOk = await step('生成安装包（Inno Setup）', iscc, [
+            `/DMyAppVersion=${version}`,
+            `/DMyAppId=${process.env.MYAPPID ?? '2D6F0E1B-8B1C-4A0E-9B3A-4C7E5D9A1F22'}`,
+            path.join('release', 'build-windows.iss'),
+        ]);
+        if (installerOk) {
+            const raw = path.join(ROOT, 'out', 'MusicFreeSetup.exe');
+            const named = path.join(ROOT, 'out', `MusicFree-${version}-win32-x64-setup.exe`);
+            if (existsSync(raw)) {
+                rmSync(named, { force: true });
+                renameSync(raw, named);
+                const info = describeArtifact(named);
+                if (info) console.log(dim(`  产物：${info}`));
+            }
+        }
+    }
+
+    const portableOk = await buildPortable(version);
+    return (installerOk || !iscc) && portableOk;
 }
 
 const TASKS = {
     plugin: { label: '构建插件', hint: 'plugin-kuwo → dist/kuwo.js', run: buildPlugin },
     app: { label: '构建应用', hint: '可运行目录 out/（不生成安装包）', run: buildApp },
-    make: { label: '打安装包', hint: 'out/make（耗时较长）', run: buildInstaller },
+    make: {
+        label: '打安装包',
+        hint: 'out/ 下 .exe 安装包 + 便携版 .zip（先构建一次应用）',
+        run: buildInstaller,
+    },
     all: {
         label: '插件 + 应用',
         hint: '先构建插件，再构建应用',
