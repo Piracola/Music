@@ -96,6 +96,7 @@
         "star": "收藏",
         "recommend_empty": "暂无歌单",
         "default_tag": "默认",
+        "more_tags": "更多标签",
         "sheet_search_placeholder": "搜索此歌单...",
         "empty_title": "歌单是空的",
         "empty_desc": "试试添加一些喜欢的歌曲吧",
@@ -191,7 +192,8 @@
         "artist_load_error": "获取音乐列表失败",
         "artist_empty_albums": "暂无专辑",
         "fans": "粉丝",
-        "works_count": "{{count}} 首歌曲"
+        "works_count": "{{count}} 首歌曲",
+        "play_count": "{{count}} 次播放"
     },
     "plugin": {
         "prop_user_variable": "用户变量",

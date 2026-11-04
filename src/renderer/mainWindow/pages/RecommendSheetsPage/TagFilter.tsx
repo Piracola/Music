@@ -14,6 +14,8 @@ export interface TagFilterProps {
     selectedTag: IMedia.IUnique;
     /** 选中标签变更回调 */
     onTagChange: (tag: IMedia.IUnique) => void;
+    /** 概览模式：顶行只留「更多标签」，标签不占首屏 */
+    moreOnly?: boolean;
 }
 
 /**
@@ -21,8 +23,9 @@ export interface TagFilterProps {
  *
  * 顶行：默认标签（带下拉箭头） + pinned 标签
  * 下拉面板：按分组展示全部标签
+ * moreOnly：顶行只留一个「更多标签」，其余标签全在面板里
  */
-export function TagFilter({ tags, selectedTag, onTagChange }: TagFilterProps) {
+export function TagFilter({ tags, selectedTag, onTagChange, moreOnly = false }: TagFilterProps) {
     const { t } = useTranslation();
     const [panelOpen, setPanelOpen] = useState(false);
     const panelRef = useRef<HTMLDivElement>(null);
@@ -40,9 +43,14 @@ export function TagFilter({ tags, selectedTag, onTagChange }: TagFilterProps) {
         return () => document.removeEventListener('mousedown', handleMouseDown);
     }, [panelOpen]);
 
-    const handleDefaultClick = useCallback(() => {
+    const togglePanel = useCallback(() => {
         setPanelOpen((prev) => !prev);
     }, []);
+
+    const backToDefault = useCallback(() => {
+        onTagChange(DEFAULT_TAG);
+        setPanelOpen(false);
+    }, [onTagChange]);
 
     const handlePinnedClick = useCallback(
         (tag: IMedia.IUnique) => {
@@ -62,31 +70,56 @@ export function TagFilter({ tags, selectedTag, onTagChange }: TagFilterProps) {
     const pinnedTags = tags?.pinned ?? [];
     const groupedTags = tags?.data ?? [];
     const hasDropdown = groupedTags.length > 0;
+    const defaultLabel = t('playlist.default_tag');
+
+    const chevron = hasDropdown ? (
+        <ChevronDown
+            size={14}
+            className={cn('p-recommend-sheets__tag-filter-chevron', panelOpen && 'is-open')}
+        />
+    ) : undefined;
+
+    const renderFirstChip = () => {
+        // 概览模式：一个「更多标签」入口，够用又不占地方
+        if (moreOnly && hasDropdown) {
+            return (
+                <Chip
+                    label={t('playlist.more_tags')}
+                    active={panelOpen}
+                    onClick={togglePanel}
+                    suffix={chevron}
+                />
+            );
+        }
+        // 筛选模式：当前选中的标签不可再选，所以给一个明确的「默认」回入口
+        if (!moreOnly && selectedTag.id !== DEFAULT_TAG.id) {
+            return (
+                <>
+                    <Chip label={defaultLabel} onClick={backToDefault} />
+                    <Chip
+                        label={selectedTag.title ?? defaultLabel}
+                        active
+                        onClick={hasDropdown ? togglePanel : undefined}
+                        suffix={chevron}
+                    />
+                </>
+            );
+        }
+        return (
+            <Chip
+                label={defaultLabel}
+                active={panelOpen}
+                onClick={hasDropdown ? togglePanel : undefined}
+                suffix={chevron}
+            />
+        );
+    };
 
     return (
         <div className="p-recommend-sheets__tag-filter" ref={panelRef}>
             {/* 标签行 */}
             <div className="p-recommend-sheets__tag-filter-row">
-                <Chip
-                    label={
-                        selectedTag.id === DEFAULT_TAG.id
-                            ? t('playlist.default_tag')
-                            : (selectedTag.title ?? t('playlist.default_tag'))
-                    }
-                    active={selectedTag.id === DEFAULT_TAG.id || panelOpen}
-                    onClick={hasDropdown ? handleDefaultClick : undefined}
-                    suffix={
-                        hasDropdown ? (
-                            <ChevronDown
-                                size={14}
-                                className={cn(
-                                    'p-recommend-sheets__tag-filter-chevron',
-                                    panelOpen && 'is-open',
-                                )}
-                            />
-                        ) : undefined
-                    }
-                />
+                {renderFirstChip()}
                 {pinnedTags.map((tag) => (
                     <Chip
                         key={tag.id}

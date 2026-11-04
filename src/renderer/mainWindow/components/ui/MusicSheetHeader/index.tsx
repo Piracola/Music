@@ -48,7 +48,7 @@ export function MusicSheetHeader({
     className,
 }: MusicSheetHeaderProps) {
     const { t } = useTranslation();
-    const { artwork, title, description, artist, platform, worksNum } = musicSheet;
+    const { artwork, title, description, artist, platform, worksNum, playCount } = musicSheet;
 
     // ── 描述溢出检测 ──
     const descRef = useRef<HTMLParagraphElement>(null);
@@ -85,6 +85,11 @@ export function MusicSheetHeader({
     }
     if (worksNum != null) {
         metaItems.push(<span key="count">{t('media.works_count', { count: worksNum })}</span>);
+    }
+    if (playCount) {
+        metaItems.push(
+            <span key="play">{t('media.play_count', { count: playCount.toLocaleString() })}</span>,
+        );
     }
 
     // 条目之间插入分隔符

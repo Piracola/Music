@@ -242,11 +242,19 @@ export const methodNormalizers: Partial<
     },
 
     // ─── getRecommendSheetTags ───
-    // 旧版不对 getRecommendSheetTags 结果做 resetMediaItem，保持一致
+    // 标签条目也补齐 platform：宿主可能直接把某一组标签渲染成歌单卡片（带封面的分组），
+    // 卡片点击要靠 platform 拼歌单路由，缺了就会跳到 /musicsheet/undefined/xxx
     getRecommendSheetTags: {
-        afterCall(result) {
+        afterCall(result, platform) {
             if (!result) return { data: [] };
-            return result;
+            return {
+                ...result,
+                pinned: result.pinned ? resetMediaItems(result.pinned, platform) : result.pinned,
+                data: (result.data ?? []).map((group: IMusic.IMusicSheetGroupItem) => ({
+                    ...group,
+                    data: resetMediaItems(group.data, platform),
+                })),
+            };
         },
         defaultResult: () => ({ data: [] }),
     },

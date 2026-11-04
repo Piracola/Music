@@ -1,4 +1,12 @@
-import { useState, useMemo, useDeferredValue, useCallback, type MouseEvent } from 'react';
+import {
+    useState,
+    useMemo,
+    useDeferredValue,
+    useCallback,
+    useEffect,
+    useRef,
+    type MouseEvent,
+} from 'react';
 import { useParams, useLocation } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { Heart, FolderPlus } from 'lucide-react';
@@ -16,6 +24,11 @@ import { showContextMenu } from '../../components/ui/ContextMenu/contextMenuMana
 import { showModal } from '../../components/ui/Modal/modalManager';
 import { useSheetDetail } from './useSheetDetail';
 import './index.scss';
+
+/** 搜索时命中到这个数量就算够用 */
+const SEARCH_TARGET = 20;
+/** 搜索时最多自动追这么多页，避免整张歌单被一次性拉完 */
+const MAX_SEARCH_PAGES = 10;
 
 /**
  * SheetPage — 远程歌单详情页
@@ -56,6 +69,23 @@ export default function SheetPage() {
                 (item.album ?? '').toLowerCase().includes(keyword),
         );
     }, [musicList, deferredSearch]);
+
+    // ── 搜索时向后追问：命中太少就继续翻页，最多追 MAX_SEARCH_PAGES 页 ──
+    const autoLoadPagesRef = useRef(0);
+    useEffect(() => {
+        autoLoadPagesRef.current = 0;
+    }, [deferredSearch]);
+
+    const isSearching = deferredSearch.trim().length > 0;
+    useEffect(() => {
+        if (!isSearching || isEnd) return;
+        if (requestStatus === RequestStatus.Pending || requestStatus === RequestStatus.Error)
+            return;
+        if (filteredList.length >= SEARCH_TARGET) return;
+        if (autoLoadPagesRef.current >= MAX_SEARCH_PAGES) return;
+        autoLoadPagesRef.current += 1;
+        loadMore();
+    }, [isSearching, isEnd, requestStatus, filteredList.length, loadMore]);
 
     // ── 操作回调 ──
     const handlePlayAll = useCallback(() => {
@@ -133,7 +163,7 @@ export default function SheetPage() {
                 data={filteredList}
                 requestStatus={musicList.length > 0 ? RequestStatus.Done : requestStatus}
                 onRetry={retry}
-                enableLoadMore={!isEnd && musicList.length > 0}
+                enableLoadMore={!isSearching && !isEnd && musicList.length > 0}
                 loadMoreStatus={requestStatus}
                 onLoadMore={loadMore}
                 onLoadMoreRetry={retry}

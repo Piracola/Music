@@ -96,6 +96,7 @@
         "star": "Star",
         "recommend_empty": "No playlists available",
         "default_tag": "Default",
+        "more_tags": "More tags",
         "sheet_search_placeholder": "Search this playlist...",
         "empty_title": "Playlist is empty",
         "empty_desc": "Try adding some songs you like",
@@ -191,7 +192,8 @@
         "artist_load_error": "Failed to load music list",
         "artist_empty_albums": "No albums",
         "fans": "fans",
-        "works_count": "{{count}} songs"
+        "works_count": "{{count}} songs",
+        "play_count": "{{count}} plays"
     },
     "plugin": {
         "prop_user_variable": "User Variable",

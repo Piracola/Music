@@ -16,6 +16,8 @@ The format is based on [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.
 
 - 下载设置新增「下载间隔」与「随机抖动」：可设置两次下载任务启动之间的最小间隔（秒），并在其基础上叠加随机浮动，默认关闭。
 - 引入 Issue / PR 治理工作流：长期无活动且未被接受的 Issue 会被自动标记 `stale` 并关闭；PR 必须提交到 `dev` 分支并关联一个已被接受的 Issue。
+- 插件「用户变量」弹窗支持网页登录：在应用内打开官方登录页，登录完成后自动回填登录凭证，无需手动复制 Cookie（首个支持平台：酷我音乐）。
+- 热门歌单页改为分区展示：默认页直接给出推荐歌单，带封面的标签组（如「我的歌单」）平铺为卡片分区，分类标签收进「更多标签」；歌单详情页新增播放量，歌单内搜索会自动向后翻页补齐结果。
 
 ### 修复
 
@@ -25,6 +27,8 @@ The format is based on [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.
 
 - Add "Download interval" and "Random jitter" download settings: configure the minimum interval (seconds) between starting two download tasks, with an optional random variation on top. Disabled by default.
 - Add issue/PR governance workflows: inactive and unaccepted issues are automatically marked `stale` and closed; PRs must target the `dev` branch and link an accepted issue.
+- Plugin user-variable dialog now supports web login: sign in on the official page inside the app and the credentials are filled in automatically instead of copying cookies by hand (first supported platform: Kuwo).
+- Recommended playlists page is now section-based: the default view shows recommended playlists directly, tag groups with artwork (such as "My playlists") are laid out as card sections, and category tags move into "More tags"; playlist details show play counts, and in-sheet search keeps paging until it has enough matches.
 
 ### Fixed
 
