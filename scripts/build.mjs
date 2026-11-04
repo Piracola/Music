@@ -111,7 +111,22 @@ async function buildPlugin() {
     return ok;
 }
 
+/** 应用依赖没装全（典型情况：装了 --ignore-scripts，没有 Electron 本体）时补一次 */
+async function ensureAppDeps() {
+    const electronBinary = path.join(
+        ROOT,
+        'node_modules',
+        'electron',
+        'dist',
+        process.platform === 'win32' ? 'electron.exe' : 'electron',
+    );
+    if (existsSync(electronBinary)) return true;
+    console.log(yellow('  应用依赖不完整（缺 Electron 本体），先装一次，可能要下载上百 MB'));
+    return step('安装应用依赖', 'pnpm', ['install']);
+}
+
 async function buildApp() {
+    if (!(await ensureAppDeps())) return false;
     const ok = await step('构建应用（electron-forge package）', 'pnpm', ['run', 'package']);
     if (ok) {
         const out = path.join(ROOT, 'out');
