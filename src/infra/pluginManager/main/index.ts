@@ -320,6 +320,7 @@ class PluginManager {
         try {
             const files = fs.readdirSync(this.pluginBasePath).filter((f) => f.endsWith('.js'));
             const loadedHashes = new Set<string>(this.plugins.keys()); // 包含已注册的内建插件
+            let hadFailure = false;
 
             for (const file of files) {
                 const filePath = path.join(this.pluginBasePath, file);
@@ -340,17 +341,35 @@ class PluginManager {
                         filePath,
                         this.buildSandboxOptions(hash),
                     );
-                    if (!instance) continue;
+                    if (!instance) {
+                        hadFailure = true;
+                        continue;
+                    }
 
                     const delegate = extractPluginDelegate(instance, hash);
                     this.plugins.set(hash, { instance, hash, delegate });
                     loadedHashes.add(hash);
                 } catch (err) {
+                    hadFailure = true;
                     console.error(`[PluginManager] Failed to load plugin file ${file}:`, err);
                 }
             }
 
             console.log(`[PluginManager] Loaded ${this.plugins.size} plugins`);
+
+            // 清掉「插件已不存在」的残留记录：换过几次包的机器会攒下一堆，
+            // 里面还留着旧的登录凭据。有文件加载失败时不清理，免得被临时故障洗掉配置。
+            if (!hadFailure) {
+                const staleHashes = Object.keys(this.pluginMeta).filter(
+                    (key) => !this.plugins.has(key),
+                );
+                if (staleHashes.length) {
+                    for (const staleHash of staleHashes) {
+                        delete this.pluginMeta[staleHash];
+                    }
+                    this.saveMeta();
+                }
+            }
 
             // 为没有 order 的插件分配默认值，避免更新后 hash 变化导致顺序乱掉
             this.assignDefaultOrder();

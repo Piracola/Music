@@ -21,7 +21,7 @@ The format is based on [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.
 
 ### 修复
 
-- 修复更换插件构建（覆盖导入或卸载后重新导入）会清空用户变量、要重新登录的问题：同平台重新导入时会自动沿用上一次的登录凭据。
+- 修复更换插件构建（覆盖导入或卸载后重新导入）会清空用户变量、要重新登录的问题：同平台重新导入时会自动沿用上一次的登录凭据，并清理已卸载插件残留的配置记录。
 - 修复部分在线音源（WebDAV 等需附加请求头的插件音源）播放时，歌曲未播完就跳到下一首、长时间播放后卡死或无限跳歌的问题。
 
 ### Added
@@ -33,7 +33,7 @@ The format is based on [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.
 
 ### Fixed
 
-- Fix plugin user variables (such as login cookies) being wiped when a plugin build is replaced by re-importing, which forced a new sign-in; the credentials are now carried over to the new build of the same platform.
+- Fix plugin user variables (such as login cookies) being wiped when a plugin build is replaced by re-importing, which forced a new sign-in; the credentials are now carried over to the new build of the same platform, and leftover entries of removed plugins are cleaned up.
 - Fix some streamed online sources (WebDAV and other plugin sources requiring custom request headers) skipping to the next track before finishing, and hanging or skipping endlessly after long playback sessions.
 
 ---
