@@ -11,7 +11,9 @@
  *   node scripts/build.mjs            交互式菜单
  *   node scripts/build.mjs plugin     直接构建插件
  *   node scripts/build.mjs app        直接构建应用（可运行目录）
- *   node scripts/build.mjs make       直接打安装包
+ *   node scripts/build.mjs make       构建应用 + 打安装包
+ *   node scripts/build.mjs repack     跳过构建，用现有 out/ 直接重打安装包
+ *   node scripts/build.mjs portable   构建应用 + 打便携版 zip
  *   node scripts/build.mjs all        插件 + 应用
  */
 import { spawn, execFileSync } from 'node:child_process';
@@ -177,16 +179,27 @@ function readAppVersion() {
     }
 }
 
-/** 便携版：和 CI 一致，放一个 .portable 标记再压成 zip */
+/**
+ * 便携版靠「exe 同级有个 portable/ 目录」来切换数据目录（见 src/main/index.ts）。
+ * 这个标记要是留在 out/ 里，随后打出来的安装包也会装成便携版，所以打完/打前都要清掉。
+ */
+const PORTABLE_MARKER_DIR = path.join(ROOT, 'out', 'MusicFree-win32-x64', 'portable');
+
+function clearPortableMarker() {
+    rmSync(PORTABLE_MARKER_DIR, { recursive: true, force: true });
+}
+
+/**
+ * 便携版：和 CI 一致，放一个 .portable 标记再压成 zip
+ */
 async function buildPortable(version) {
     const appDir = path.join(ROOT, 'out', 'MusicFree-win32-x64');
     if (!existsSync(appDir)) {
         console.log(red('  没找到 out/MusicFree-win32-x64，先构建应用'));
         return false;
     }
-    const markerDir = path.join(appDir, 'portable');
-    mkdirSync(markerDir, { recursive: true });
-    writeFileSync(path.join(markerDir, '.portable'), '');
+    mkdirSync(PORTABLE_MARKER_DIR, { recursive: true });
+    writeFileSync(path.join(PORTABLE_MARKER_DIR, '.portable'), '');
 
     const zipPath = path.join(ROOT, 'out', `MusicFree-${version}-win32-x64-portable.zip`);
     rmSync(zipPath, { force: true });
@@ -199,41 +212,56 @@ async function buildPortable(version) {
         path.join(ROOT, 'out'),
         'MusicFree-win32-x64',
     ]);
+    // 标记只用这一次，留着会污染后面的安装包
+    clearPortableMarker();
     if (ok) console.log(dim(`  产物：out/${path.basename(zipPath)}`));
     return ok;
 }
 
-async function buildInstaller() {
-    if (!(await buildApp())) return false;
+/**
+ * 压缩档位。
+ *
+ * Inno Setup 的 lzma（默认）压 100+ MB 的 Electron 要一分多钟，本地反复打包太磨人；
+ * lzma2/fast 只要十几秒，体积大 25 MB 左右。发版想要小安装包就设环境变量：
+ *   MYAPP_COMPRESSION=lzma
+ * CI 走的是 .iss 里的默认值（lzma），不受这里影响。
+ */
+const COMPRESSION = process.env.MYAPP_COMPRESSION ?? 'lzma2/fast';
 
+/** 用现有 out/ 打安装包（不重新构建应用） */
+async function packageInstaller() {
+    const appDir = path.join(ROOT, 'out', 'MusicFree-win32-x64');
+    if (!existsSync(appDir)) {
+        console.log(red('  没找到 out/MusicFree-win32-x64，先构建应用'));
+        return false;
+    }
     const version = readAppVersion();
     const iscc = findIscc();
-    let installerOk = false;
-
     if (!iscc) {
         console.log('');
-        console.log(yellow('  没找到 Inno Setup（ISCC.exe），这次只出便携版'));
+        console.log(yellow('  没找到 Inno Setup（ISCC.exe），没法打安装包'));
         console.log(dim('  想要 .exe 安装包：装一个 Inno Setup 6，或用 ISCC_PATH 指定路径'));
-    } else {
-        installerOk = await step('生成安装包（Inno Setup）', iscc, [
-            `/DMyAppVersion=${version}`,
-            `/DMyAppId=${process.env.MYAPPID ?? '2D6F0E1B-8B1C-4A0E-9B3A-4C7E5D9A1F22'}`,
-            path.join('release', 'build-windows.iss'),
-        ]);
-        if (installerOk) {
-            const raw = path.join(ROOT, 'out', 'MusicFreeSetup.exe');
-            const named = path.join(ROOT, 'out', `MusicFree-${version}-win32-x64-setup.exe`);
-            if (existsSync(raw)) {
-                rmSync(named, { force: true });
-                renameSync(raw, named);
-                const info = describeArtifact(named);
-                if (info) console.log(dim(`  产物：${info}`));
-            }
-        }
+        return false;
     }
+    // 之前打过便携版的话，这里可能还留着 portable/ 标记，会让安装包装成便携版
+    clearPortableMarker();
+    const ok = await step(`生成安装包（Inno Setup · 压缩 ${COMPRESSION}）`, iscc, [
+        `/DMyAppVersion=${version}`,
+        `/DMyAppId=${process.env.MYAPPID ?? '2D6F0E1B-8B1C-4A0E-9B3A-4C7E5D9A1F22'}`,
+        `/DMyCompression=${COMPRESSION}`,
+        path.join('release', 'build-windows.iss'),
+    ]);
+    if (!ok) return false;
 
-    const portableOk = await buildPortable(version);
-    return (installerOk || !iscc) && portableOk;
+    const raw = path.join(ROOT, 'out', 'MusicFreeSetup.exe');
+    const named = path.join(ROOT, 'out', `MusicFree-${version}-win32-x64-setup.exe`);
+    if (existsSync(raw)) {
+        rmSync(named, { force: true });
+        renameSync(raw, named);
+        const info = describeArtifact(named);
+        if (info) console.log(dim(`  产物：${info}`));
+    }
+    return true;
 }
 
 const TASKS = {
@@ -241,8 +269,18 @@ const TASKS = {
     app: { label: '构建应用', hint: '可运行目录 out/（不生成安装包）', run: buildApp },
     make: {
         label: '打安装包',
-        hint: 'out/ 下 .exe 安装包 + 便携版 .zip（先构建一次应用）',
-        run: buildInstaller,
+        hint: `构建应用 → .exe 安装包（压缩 ${COMPRESSION}）`,
+        run: async () => (await buildApp()) && packageInstaller(),
+    },
+    repack: {
+        label: '重打安装包',
+        hint: '跳过构建，拿现有 out/ 直接压缩（最快的一种）',
+        run: packageInstaller,
+    },
+    portable: {
+        label: '打便携版',
+        hint: '构建应用 → 便携版 .zip',
+        run: async () => (await buildApp()) && buildPortable(readAppVersion()),
     },
     all: {
         label: '插件 + 应用',
@@ -261,6 +299,8 @@ const MENU = [
     { key: 'plugin', label: '构建插件 kuwo.js', note: TASKS.plugin.hint },
     { key: 'app', label: '构建应用（可运行目录）', note: TASKS.app.hint },
     { key: 'make', label: '打安装包', note: TASKS.make.hint },
+    { key: 'repack', label: '重打安装包（跳过构建）', note: TASKS.repack.hint },
+    { key: 'portable', label: '打便携版 zip', note: TASKS.portable.hint },
     { key: 'all', label: '插件 + 应用', note: TASKS.all.hint },
     { key: 'quit', label: '退出', note: '' },
 ];

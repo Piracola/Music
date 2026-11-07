@@ -11,6 +11,11 @@
 #ifndef MyAppId
 #define MyAppId
 #endif
+; 压缩档位：默认 lzma（体积最小，CI 用）。
+; 本地反复打包可以传 /DMyCompression=lzma2/fast，压缩快好几倍，代价是体积大一些。
+#ifndef MyCompression
+#define MyCompression "lzma"
+#endif
 
 
 [Setup]
@@ -32,7 +37,7 @@ PrivilegesRequiredOverridesAllowed=dialog
 OutputDir=..\out
 OutputBaseFilename=MusicFreeSetup
 SetupIconFile=..\res\logo.ico
-Compression=lzma
+Compression={#MyCompression}
 SolidCompression=yes
 WizardStyle=modern
 
