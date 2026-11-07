@@ -18,6 +18,7 @@ The format is based on [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.
 - 引入 Issue / PR 治理工作流：长期无活动且未被接受的 Issue 会被自动标记 `stale` 并关闭；PR 必须提交到 `dev` 分支并关联一个已被接受的 Issue。
 - 插件「用户变量」弹窗支持网页登录：在应用内打开官方登录页，登录完成后自动回填登录凭证，无需手动复制 Cookie（首个支持平台：酷我音乐）。
 - 热门歌单页改为分区展示：默认页直接给出推荐歌单，带封面的标签组（如「我的歌单」）平铺为卡片分区，分类标签收进「更多标签」；歌单详情页新增播放量，歌单内搜索会自动向后翻页补齐结果。
+- 安装包瘦身：只保留中/英/繁三种 Chromium 语言包，并剔除运行时用不到的 sqlite 源码与编译中间文件，安装体积减少约 12 MB。
 
 ### 修复
 
@@ -30,6 +31,7 @@ The format is based on [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.
 - Add issue/PR governance workflows: inactive and unaccepted issues are automatically marked `stale` and closed; PRs must target the `dev` branch and link an accepted issue.
 - Plugin user-variable dialog now supports web login: sign in on the official page inside the app and the credentials are filled in automatically instead of copying cookies by hand (first supported platform: Kuwo).
 - Recommended playlists page is now section-based: the default view shows recommended playlists directly, tag groups with artwork (such as "My playlists") are laid out as card sections, and category tags move into "More tags"; playlist details show play counts, and in-sheet search keeps paging until it has enough matches.
+- Slimmer installer: only the Chinese/English/Chinese-Traditional Chromium locale packs are kept, and the sqlite sources and build intermediates that are useless at runtime are dropped, cutting the installer by roughly 12 MB.
 
 ### Fixed
 

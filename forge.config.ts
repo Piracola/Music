@@ -6,11 +6,49 @@ import { AutoUnpackNativesPlugin } from '@electron-forge/plugin-auto-unpack-nati
 import { WebpackPlugin } from '@electron-forge/plugin-webpack';
 import { FusesPlugin } from '@electron-forge/plugin-fuses';
 import { FuseV1Options, FuseVersion } from '@electron/fuses';
+import fs from 'fs';
 import path from 'path';
 
 import { mainConfig } from './config/webpack.main.config';
 import { rendererConfig } from './config/webpack.renderer.config';
 import { preloadConfig } from './config/webpack.preload.config';
+
+/**
+ * 打包瘦身：这两处是「装船但运行时用不到」的死重。
+ *
+ * 1. Electron 自带 55 个 Chromium 语言包（约 45 MB），界面文案全走 res/lang，
+ *    只有这几个语言的原生对话框用得上；其余删掉，系统设置成别的语言时回落到英文界面。
+ * 2. better-sqlite3 的 npm 包里带着编译期才用的 sqlite3.c / .h 和 C++ 源码（约 10 MB），
+ *    运行时只认 build/Release/better_sqlite3.node。
+ *
+ * 放在 afterCopy 里删：那时应用目录还是散文件，之后才压成 app.asar。
+ */
+const KEEP_LOCALES = ['en-US', 'zh-CN', 'zh-TW'];
+const DEAD_WEIGHT_IN_APP = [
+    'node_modules/better-sqlite3/deps',
+    'node_modules/better-sqlite3/src',
+    'node_modules/sharp/src',
+    'node_modules/sharp/install',
+];
+
+/**
+ * 注意：forge 传给 afterCopy 的 buildPath 是**应用目录**（…/resources/app），
+ * 不是打包出来的平台目录，所以语言包要往上两级去找。
+ */
+function trimPackagedApp(appPath: string) {
+    const platformRoot = path.resolve(appPath, '..', '..');
+    const localesDir = path.join(platformRoot, 'locales');
+    if (fs.existsSync(localesDir)) {
+        for (const name of fs.readdirSync(localesDir)) {
+            if (!name.endsWith('.pak')) continue;
+            if (KEEP_LOCALES.includes(name.slice(0, -'.pak'.length))) continue;
+            fs.rmSync(path.join(localesDir, name), { force: true });
+        }
+    }
+    for (const rel of DEAD_WEIGHT_IN_APP) {
+        fs.rmSync(path.join(appPath, rel), { recursive: true, force: true });
+    }
+}
 
 const config: ForgeConfig = {
     packagerConfig: {
@@ -25,6 +63,19 @@ const config: ForgeConfig = {
             {
                 name: 'MusicFree',
                 schemes: ['musicfree'],
+            },
+        ],
+        // 必须在 afterCopy 阶段（此时资源还是散文件），asar 打包在它之后
+        afterCopy: [
+            (
+                buildPath: string,
+                _electronVersion: string,
+                _platform: string,
+                _arch: string,
+                callback: () => void,
+            ) => {
+                trimPackagedApp(buildPath);
+                callback();
             },
         ],
     },
