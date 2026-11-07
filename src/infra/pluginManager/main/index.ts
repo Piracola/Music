@@ -84,6 +84,13 @@ class PluginManager {
     /** 插件 meta（排序、用户变量） */
     private pluginMeta: IPluginMetaAll = {};
 
+    /**
+     * 刚卸载掉的插件留下的用户变量：platform → 变量表，只在本次运行内有效。
+     * 用途：本地换插件包（卸载 → 导入）不至于把登录 Cookie 一起丢掉；
+     * 重启后不再记得，所以真卸载不会把凭据永久留在配置里。
+     */
+    private removedVariables = new Map<string, Record<string, string>>();
+
     /** 进行中的网页登录（防重复开窗） */
     private webLoginInFlight: Promise<IWebLoginResult> | null = null;
 
@@ -539,6 +546,23 @@ class PluginManager {
                 this.plugins.delete(existingEntry.hash);
             }
 
+            // 换包不换账号：同 platform 重新导入时把上一个插件的 meta 挪过来（含登录 Cookie），
+            // 插件身份是代码哈希，覆盖安装后是一张新面孔，不迁移就要重新登录一次。
+            const previousMeta = existingEntry ? this.pluginMeta[existingEntry.hash] : undefined;
+            if (existingEntry) {
+                delete this.pluginMeta[existingEntry.hash];
+            }
+            const inherited =
+                previousMeta?.userVariables ?? this.removedVariables.get(instance.platform);
+            this.pluginMeta[hash] = {
+                ...previousMeta,
+                ...(inherited && Object.keys(inherited).length
+                    ? { userVariables: { ...inherited } }
+                    : {}),
+            };
+            this.saveMeta();
+            this.removedVariables.delete(instance.platform);
+
             const delegate = extractPluginDelegate(instance, hash);
             this.plugins.set(hash, { instance, hash, delegate });
 
@@ -559,6 +583,13 @@ class PluginManager {
 
         // 删除文件
         this.removePluginFile(loaded);
+
+        // 记录登录 Cookie 等用户变量：马上要删 meta 了，留一份给「换个包重新导入」用
+        const platform = loaded.instance.platform;
+        const vars = this.pluginMeta[hash]?.userVariables;
+        if (platform && vars && Object.keys(vars).length) {
+            this.removedVariables.set(platform, vars);
+        }
 
         // 清除存储
         this.pluginStorage?.clearPlugin(hash);
