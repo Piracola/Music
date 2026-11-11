@@ -496,15 +496,12 @@
             "check_update_failed": "Update check failed, please try again later",
             "already_latest_v2": "Already up to date",
             "current_version_label": "Current Version",
-            "official_site_link": "Official Website",
+            "official_site_link": "Downloads",
             "issues_link": "Report Issues",
             "contact_author_title": "Contact Author",
             "contact_author_subtitle": "Follow on these platforms for latest updates",
             "author_label": "Author",
-            "author_name": "Piracola",
-            "xiaohongshu": "Xiaohongshu",
-            "wechat_alt": "WeChat Official Account: upup-fun",
-            "wechat_hint": "Search for upup-fun on WeChat"
+            "author_name": "Piracola"
         }
     },
     "theme": {

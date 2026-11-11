@@ -8,8 +8,11 @@
 #define MyAppPublisher "Piracola"
 #define MyAppURL "https://github.com/Piracola/Music"
 #define MyAppExeName "Music.exe"
-; 固定 AppId，保证后续版本升级时安装程序识别为同一个应用（与上游 MusicFree 区分开）。
+; 固定 AppId，保证升级时安装程序识别为同一个应用（与上游 MusicFree 区分开）。
+; 命令行 /DMyAppId=... 可覆盖，本地 build.mjs 与 CI 都沿用同一默认值。
+#ifndef MyAppId
 #define MyAppId "68AF1690-EE37-4C97-AF52-0F178C335BF3"
+#endif
 ; 压缩档位：默认 lzma（体积最小，CI 用）。
 ; 本地反复打包可以传 /DMyCompression=lzma2/fast，压缩快好几倍，代价是体积大一些。
 #ifndef MyCompression

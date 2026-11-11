@@ -12,6 +12,7 @@ type SocialIcon = React.ComponentType<{ size?: number; className?: string }>;
 const GITHUB_REPO = 'https://github.com/Piracola/Music';
 const GITHUB_AUTHOR = 'https://github.com/Piracola';
 const GITHUB_ISSUES = 'https://github.com/Piracola/Music/issues';
+const RELEASES_URL = 'https://github.com/Piracola/Music/releases';
 const LICENSE_URL = `${GITHUB_REPO}/blob/master/LICENSE`;
 
 const SOCIAL_LINKS_DATA: {
@@ -79,7 +80,7 @@ export function AboutSection() {
                         <LinkRow
                             label={t('settings.about.official_site_link')}
                             text="GitHub Releases"
-                            url={GITHUB_REPO}
+                            url={RELEASES_URL}
                         />
                         <LinkRow label="GitHub" text="Piracola/Music" url={GITHUB_REPO} />
                         <LinkRow

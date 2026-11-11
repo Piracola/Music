@@ -31,15 +31,32 @@ import path from 'path';
 // ─── Phase 0: Portable 模式检测（仅 Windows） ───
 // 若 exe 同级目录下存在 portable/ 文件夹，则将 appData/userData 重定向至该目录，
 // 实现免安装便携运行，所有用户数据随 exe 移动。
+let isPortable = false;
 if (process.platform === 'win32') {
     try {
         const portablePath = path.resolve(app.getPath('exe'), '..', 'portable');
         if (fs.statSync(portablePath).isDirectory()) {
             app.setPath('appData', path.resolve(portablePath, 'appData'));
             app.setPath('userData', path.resolve(portablePath, 'userData'));
+            isPortable = true;
         }
     } catch {
         // portable 目录不存在，使用正常模式
+    }
+}
+
+// ─── Phase 0.1: 旧版数据目录迁移（MusicFree → Music） ───
+// 应用更名后 userData 默认目录随之变化，首次启动时把旧目录整体改名，
+// 保证设置、歌单、插件与登录态不丢。迁移失败则按全新目录运行。
+if (!isPortable) {
+    try {
+        const legacyUserData = path.join(app.getPath('appData'), 'MusicFree');
+        const currentUserData = path.join(app.getPath('appData'), 'Music');
+        if (fs.existsSync(legacyUserData) && !fs.existsSync(currentUserData)) {
+            fs.renameSync(legacyUserData, currentUserData);
+        }
+    } catch {
+        // 旧目录不可读或被占用，忽略
     }
 }
 

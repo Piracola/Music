@@ -247,7 +247,7 @@ async function packageInstaller() {
     clearPortableMarker();
     const ok = await step(`生成安装包（Inno Setup · 压缩 ${COMPRESSION}）`, iscc, [
         `/DMyAppVersion=${version}`,
-        `/DMyAppId=${process.env.MYAPPID ?? '2D6F0E1B-8B1C-4A0E-9B3A-4C7E5D9A1F22'}`,
+        `/DMyAppId=${process.env.MYAPPID ?? '68AF1690-EE37-4C97-AF52-0F178C335BF3'}`,
         `/DMyCompression=${COMPRESSION}`,
         path.join('release', 'build-windows.iss'),
     ]);

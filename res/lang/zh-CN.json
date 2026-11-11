@@ -496,15 +496,12 @@
             "check_update_failed": "检查更新失败，请稍后重试",
             "already_latest_v2": "当前已是最新版本",
             "current_version_label": "当前版本",
-            "official_site_link": "官方网站",
+            "official_site_link": "下载地址",
             "issues_link": "问题反馈",
             "contact_author_title": "联系作者",
             "contact_author_subtitle": "关注以下平台，获取最新动态与更新",
             "author_label": "作者",
-            "author_name": "Piracola",
-            "xiaohongshu": "小红书",
-            "wechat_alt": "微信公众号: 一只猫头猫",
-            "wechat_hint": "微信搜一搜「一只猫头猫」关注"
+            "author_name": "Piracola"
         }
     },
     "theme": {
