@@ -39,7 +39,12 @@ jobs:
                   echo "VERSION=$version" >> $env:GITHUB_ENV
             - run: pnpm run package
             - name: Install Inno Setup
-              run: choco install innosetup --no-progress -y
+              shell: pwsh
+              run: |
+                  choco install innosetup --no-progress -y
+                  # Inno Setup 官方不附中文语言文件，CI 里现取一份放进 Languages 目录
+                  $langDir = "${env:ProgramFiles(x86)}\Inno Setup 6\Languages"
+                  Invoke-WebRequest -Uri "https://raw.githubusercontent.com/jrsoftware/issrc/main/Files/Languages/Unofficial/ChineseSimplified.isl" -OutFile (Join-Path $langDir "ChineseSimplified.isl")
             - name: Build installer
               shell: pwsh
               run: |
@@ -65,61 +70,6 @@ jobs:
               with:
                   name: Music-${{ env.VERSION }}-win32-x64-portable
                   path: ./out/Music-${{ env.VERSION }}-win32-x64-portable.zip
-                  retention-days: 30
-
-    build-windows-legacy:
-        runs-on: windows-latest
-        steps:
-            - uses: actions/checkout@v5
-            - uses: pnpm/action-setup@v4
-              with:
-                  version: 9
-            - uses: actions/setup-node@v5
-              with:
-                  node-version: 22
-                  cache: pnpm
-            - run: pnpm install
-            - name: Read version
-              run: |
-                  $version = node -p "require('./package.json').version"
-                  echo "VERSION=$version" >> $env:GITHUB_ENV
-            - name: Override Win7 compatibility files
-              run: |
-                  Get-ChildItem -Recurse -Filter "*.win7.ts" | ForEach-Object {
-                    $target = $_.FullName -replace '\.win7\.ts$', '.ts'
-                    Write-Host "Overriding: $target"
-                    Copy-Item $_.FullName $target -Force
-                  }
-            - name: Install Electron 22
-              run: pnpm add electron@22 --save-dev
-            - run: pnpm run package
-            - name: Install Inno Setup
-              run: choco install innosetup --no-progress -y
-            - name: Build installer
-              shell: pwsh
-              run: |
-                  $iscc = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
-                  & $iscc "/DMyAppVersion=$env:VERSION" "./release/build-windows.iss"
-                  if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-            - name: Rename setup file
-              run: |
-                  Rename-Item -Path "./out/MusicSetup.exe" -NewName "Music-${{ env.VERSION }}-win32-x64-legacy-setup.exe"
-            - name: Generate portable
-              run: |
-                  New-Item -ItemType Directory -Path "./out/Music-win32-x64/portable" -Force
-                  New-Item -ItemType File -Path "./out/Music-win32-x64/portable/.portable" -Force
-            - name: Archive portable
-              run: |
-                  Compress-Archive -Path "./out/Music-win32-x64/*" -DestinationPath "./out/Music-${{ env.VERSION }}-win32-x64-legacy-portable.zip"
-            - uses: actions/upload-artifact@v6
-              with:
-                  name: Music-${{ env.VERSION }}-win32-x64-legacy-setup
-                  path: ./out/Music-${{ env.VERSION }}-win32-x64-legacy-setup.exe
-                  retention-days: 30
-            - uses: actions/upload-artifact@v6
-              with:
-                  name: Music-${{ env.VERSION }}-win32-x64-legacy-portable
-                  path: ./out/Music-${{ env.VERSION }}-win32-x64-legacy-portable.zip
                   retention-days: 30
 
     build-macos-x64:
@@ -180,8 +130,6 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v5
-            - name: Install system dependencies
-              run: sudo apt-get update && sudo apt-get install -y rpm
             - uses: pnpm/action-setup@v4
               with:
                   version: 9
@@ -194,26 +142,15 @@ jobs:
               run: |
                   VERSION=$(node -p "require('./package.json').version")
                   echo "VERSION=$VERSION" >> $GITHUB_ENV
-            - run: pnpm run make
+            - run: pnpm run make -- --targets=@electron-forge/maker-deb
             - name: Rename DEB
               run: |
                   DEB_FILE=$(find ./out/make/deb/x64/ -name "*.deb" | head -1)
                   if [ -n "$DEB_FILE" ]; then
                     mv "$DEB_FILE" "./out/make/deb/x64/Music-${{ env.VERSION }}-linux-amd64.deb"
                   fi
-            - name: Rename RPM
-              run: |
-                  RPM_FILE=$(find ./out/make/rpm/x64/ -name "*.rpm" | head -1)
-                  if [ -n "$RPM_FILE" ]; then
-                    mv "$RPM_FILE" "./out/make/rpm/x64/Music-${{ env.VERSION }}-linux-amd64.rpm"
-                  fi
             - uses: actions/upload-artifact@v6
               with:
                   name: Music-${{ env.VERSION }}-linux-amd64-deb
                   path: ./out/make/deb/x64/Music-${{ env.VERSION }}-linux-amd64.deb
-                  retention-days: 30
-            - uses: actions/upload-artifact@v6
-              with:
-                  name: Music-${{ env.VERSION }}-linux-amd64-rpm
-                  path: ./out/make/rpm/x64/Music-${{ env.VERSION }}-linux-amd64.rpm
                   retention-days: 30

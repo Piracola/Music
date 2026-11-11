@@ -40,6 +40,7 @@ Get installers from [Releases](https://github.com/Piracola/Music/releases).
 Plugins follow the [MusicFree plugin protocol](https://musicfree.catcat.work/plugin/introduction.html) and stay compatible with the Android version.
 
 - Plugins are **not distributed with this repository**; they are provided through the author's channels
+- Import a plugin file or paste a link in **Plugin Manager**; `music://install/<plugin-url>` also works
 - Plugins run in a sandbox with `axios` · `cheerio` · `dayjs` · `big-integer` · `qs` · `he` · `crypto-js` · `webdav`
 - Web login is supported — no manual cookie copying
 

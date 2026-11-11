@@ -40,6 +40,7 @@
 插件遵循 [MusicFree 插件协议](https://musicfree.catcat.work/plugin/introduction.html)，与安卓版保持兼容。
 
 - 插件**不随本仓库分发**，通过作者指定的渠道获取
+- 获取插件后，在「插件管理」页导入插件文件或粘贴链接即可使用；也支持 `music://install/<插件链接>` 直接唤起安装
 - 插件运行在沙箱中，可使用 `axios` · `cheerio` · `dayjs` · `big-integer` · `qs` · `he` · `crypto-js` · `webdav` 等模块
 - 支持网页登录，无需手动复制 Cookie
 
