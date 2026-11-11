@@ -150,6 +150,11 @@ async function bootstrapInfra(windowManager: IWindowManager) {
     pluginManager.registerBuiltinPlugin(localPluginDefine, LOCAL_PLUGIN_HASH);
 }
 
+/** 从命令行参数中提取 deep link（music:// 与兼容的 musicfree://） */
+function findDeepLink(argv: string[]): string | undefined {
+    return argv.find((arg) => arg.startsWith('music:') || arg.startsWith('musicfree:'));
+}
+
 /** 根据持久化配置恢复窗口状态 */
 function restoreWindowState() {
     if (appConfig.getConfigByKey('lyric.enableDesktopLyric')) {
@@ -163,7 +168,7 @@ app.on('ready', async () => {
     restoreWindowState();
 
     // 处理启动时传入的 deep link（Windows: 命令行参数）
-    const launchUrl = process.argv.find((arg) => arg.startsWith('musicfree:'));
+    const launchUrl = findDeepLink(process.argv);
     if (launchUrl) {
         handleDeepLink(launchUrl);
     }
@@ -180,7 +185,7 @@ app.on('second-instance', (_event, argv) => {
         windowManager.showWindow('main');
     }
 
-    const url = argv.find((arg) => arg.startsWith('musicfree:'));
+    const url = findDeepLink(argv);
     if (url) {
         handleDeepLink(url);
     }

@@ -183,7 +183,7 @@ function readAppVersion() {
  * 便携版靠「exe 同级有个 portable/ 目录」来切换数据目录（见 src/main/index.ts）。
  * 这个标记要是留在 out/ 里，随后打出来的安装包也会装成便携版，所以打完/打前都要清掉。
  */
-const PORTABLE_MARKER_DIR = path.join(ROOT, 'out', 'MusicFree-win32-x64', 'portable');
+const PORTABLE_MARKER_DIR = path.join(ROOT, 'out', 'Music-win32-x64', 'portable');
 
 function clearPortableMarker() {
     rmSync(PORTABLE_MARKER_DIR, { recursive: true, force: true });
@@ -193,15 +193,15 @@ function clearPortableMarker() {
  * 便携版：和 CI 一致，放一个 .portable 标记再压成 zip
  */
 async function buildPortable(version) {
-    const appDir = path.join(ROOT, 'out', 'MusicFree-win32-x64');
+    const appDir = path.join(ROOT, 'out', 'Music-win32-x64');
     if (!existsSync(appDir)) {
-        console.log(red('  没找到 out/MusicFree-win32-x64，先构建应用'));
+        console.log(red('  没找到 out/Music-win32-x64，先构建应用'));
         return false;
     }
     mkdirSync(PORTABLE_MARKER_DIR, { recursive: true });
     writeFileSync(path.join(PORTABLE_MARKER_DIR, '.portable'), '');
 
-    const zipPath = path.join(ROOT, 'out', `MusicFree-${version}-win32-x64-portable.zip`);
+    const zipPath = path.join(ROOT, 'out', `Music-${version}-win32-x64-portable.zip`);
     rmSync(zipPath, { force: true });
     const ok = await step('打包便携版（zip）', 'tar', [
         '-a',
@@ -210,7 +210,7 @@ async function buildPortable(version) {
         zipPath,
         '-C',
         path.join(ROOT, 'out'),
-        'MusicFree-win32-x64',
+        'Music-win32-x64',
     ]);
     // 标记只用这一次，留着会污染后面的安装包
     clearPortableMarker();
@@ -230,9 +230,9 @@ const COMPRESSION = process.env.MYAPP_COMPRESSION ?? 'lzma2/fast';
 
 /** 用现有 out/ 打安装包（不重新构建应用） */
 async function packageInstaller() {
-    const appDir = path.join(ROOT, 'out', 'MusicFree-win32-x64');
+    const appDir = path.join(ROOT, 'out', 'Music-win32-x64');
     if (!existsSync(appDir)) {
-        console.log(red('  没找到 out/MusicFree-win32-x64，先构建应用'));
+        console.log(red('  没找到 out/Music-win32-x64，先构建应用'));
         return false;
     }
     const version = readAppVersion();
@@ -253,8 +253,8 @@ async function packageInstaller() {
     ]);
     if (!ok) return false;
 
-    const raw = path.join(ROOT, 'out', 'MusicFreeSetup.exe');
-    const named = path.join(ROOT, 'out', `MusicFree-${version}-win32-x64-setup.exe`);
+    const raw = path.join(ROOT, 'out', 'MusicSetup.exe');
+    const named = path.join(ROOT, 'out', `Music-${version}-win32-x64-setup.exe`);
     if (existsSync(raw)) {
         rmSync(named, { force: true });
         renameSync(raw, named);
@@ -316,7 +316,7 @@ function header() {
         /* 不在 git 仓库里也无所谓 */
     }
     console.log('');
-    console.log(bold('  MusicFree 构建面板'));
+    console.log(bold('  Music 构建面板'));
     console.log(dim(`  ${branch ? `${branch} · ` : ''}node ${process.version} · ${ROOT}`));
     console.log(`  ${line()}`);
 }

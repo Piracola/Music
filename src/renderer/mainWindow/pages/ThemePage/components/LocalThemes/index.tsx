@@ -54,7 +54,7 @@ export default function LocalThemes() {
             {/* 默认主题卡片 */}
             <ThemeCard
                 name={t('theme.default_theme')}
-                author="猫头猫"
+                author="Piracola"
                 active={isDefaultActive}
                 preview={
                     <ThemePreview

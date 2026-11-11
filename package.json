@@ -1,7 +1,7 @@
 {
-    "name": "musicfree-desktop",
-    "productName": "MusicFree",
-    "version": "1.0.0-beta.4",
+    "name": "music-desktop",
+    "productName": "Music",
+    "version": "1.0.0-beta.5",
     "description": "一个插件化的音乐播放器",
     "main": ".webpack/main",
     "private": true,
@@ -22,21 +22,21 @@
     "keywords": [
         "music",
         "player",
-        "MusicFree",
+        "Music",
         "electron",
         "plugin"
     ],
-    "homepage": "https://musicfree.catcat.work",
+    "homepage": "https://github.com/Piracola/Music",
     "repository": {
         "type": "git",
-        "url": "https://github.com/maotoumao/MusicFreeDesktop.git"
+        "url": "https://github.com/Piracola/Music.git"
     },
     "bugs": {
-        "url": "https://github.com/maotoumao/MusicFreeDesktop/issues"
+        "url": "https://github.com/Piracola/Music/issues"
     },
     "author": {
-        "name": "maotoumao",
-        "email": "lhx_xjtu@163.com"
+        "name": "Piracola",
+        "url": "https://github.com/Piracola"
     },
     "license": "AGPL-3.0-only",
     "pnpm": {

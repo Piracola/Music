@@ -5,7 +5,7 @@ rem  Kept pure ASCII on purpose: .cmd files are read in the OEM
 rem  codepage, so the Chinese UI comes from node scripts\build.mjs.
 rem ============================================================
 chcp 65001 >nul
-title MusicFree Build Panel
+title Music Build Panel
 cd /d "%~dp0"
 
 if not exist "scripts\build.mjs" (

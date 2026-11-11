@@ -5,20 +5,13 @@ import { Button } from '@renderer/mainWindow/components/ui/Button';
 import { A } from '@renderer/mainWindow/components/ui/A';
 import systemUtil from '@infra/systemUtil/renderer';
 import { showModal } from '@renderer/mainWindow/components/ui/Modal/modalManager';
-import wechatQR from '@assets/imgs/wechat_channel1.png';
-import { MonitorPlay, BookHeart } from 'lucide-react';
-import { GithubIcon, XIcon } from '../components/BrandIcons';
+import { GithubIcon } from '../components/BrandIcons';
 
 type SocialIcon = React.ComponentType<{ size?: number; className?: string }>;
 
-const GITHUB_REPO = 'https://github.com/maotoumao/MusicFreeDesktop';
-const GITHUB_AUTHOR = 'https://github.com/maotoumao';
-const BILIBILI_AUTHOR = 'https://space.bilibili.com/12866223';
-const X_AUTHOR = 'https://twitter.com/upupfun';
-const XIAOHONGSHU_AUTHOR =
-    'https://www.xiaohongshu.com/user/profile/5ce6085200000000050213a6?xhsshare=CopyLink&appuid=5ce6085200000000050213a6&apptime=1714394544';
-const GITHUB_ISSUES = 'https://github.com/maotoumao/MusicFreeDesktop/issues';
-const OFFICIAL_SITE = 'https://musicfree.catcat.work';
+const GITHUB_REPO = 'https://github.com/Piracola/Music';
+const GITHUB_AUTHOR = 'https://github.com/Piracola';
+const GITHUB_ISSUES = 'https://github.com/Piracola/Music/issues';
 const LICENSE_URL = `${GITHUB_REPO}/blob/master/LICENSE`;
 
 const SOCIAL_LINKS_DATA: {
@@ -27,17 +20,7 @@ const SOCIAL_LINKS_DATA: {
     label?: string;
     handle: string;
     url: string;
-}[] = [
-    { icon: GithubIcon, label: 'GitHub', handle: '@猫头猫', url: GITHUB_AUTHOR },
-    { icon: MonitorPlay, label: 'Bilibili', handle: '@不想睡觉猫头猫', url: BILIBILI_AUTHOR },
-    {
-        icon: BookHeart,
-        labelKey: 'settings.about.xiaohongshu',
-        handle: '@一只猫头猫',
-        url: XIAOHONGSHU_AUTHOR,
-    },
-    { icon: XIcon, label: 'X', handle: '@upupfun', url: X_AUTHOR },
-];
+}[] = [{ icon: GithubIcon, label: 'GitHub', handle: '@Piracola', url: GITHUB_AUTHOR }];
 
 export function AboutSection() {
     const { t } = useTranslation();
@@ -95,10 +78,10 @@ export function AboutSection() {
                     <div className="p-setting__about-column">
                         <LinkRow
                             label={t('settings.about.official_site_link')}
-                            text="musicfree.catcat.work"
-                            url={OFFICIAL_SITE}
+                            text="GitHub Releases"
+                            url={GITHUB_REPO}
                         />
-                        <LinkRow label="GitHub" text="MusicFreeDesktop" url={GITHUB_REPO} />
+                        <LinkRow label="GitHub" text="Piracola/Music" url={GITHUB_REPO} />
                         <LinkRow
                             label={t('settings.about.issues_link')}
                             text="GitHub Issues"
@@ -123,12 +106,6 @@ export function AboutSection() {
                             />
                         ))}
                     </div>
-                    <img
-                        className="p-setting__about-wechat-banner"
-                        src={wechatQR}
-                        alt={t('settings.about.wechat_alt')}
-                        title={t('settings.about.wechat_hint')}
-                    />
                 </div>
             </SettingsCard>
         </>

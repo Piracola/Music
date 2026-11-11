@@ -55,14 +55,14 @@ const config: ForgeConfig = {
         asar: {
             unpack: '**/node_modules/{sharp,@img}/**/*',
         },
-        appBundleId: 'fun.upup.musicfree',
+        appBundleId: 'com.piracola.music',
         icon: path.resolve(__dirname, 'res/logo'),
-        executableName: 'MusicFree',
+        executableName: 'Music',
         extraResource: [path.resolve(__dirname, 'res')],
         protocols: [
             {
-                name: 'MusicFree',
-                schemes: ['musicfree'],
+                name: 'Music',
+                schemes: ['music', 'musicfree'],
             },
         ],
         // 必须在 afterCopy 阶段（此时资源还是散文件），asar 打包在它之后
@@ -86,13 +86,13 @@ const config: ForgeConfig = {
         }),
         new MakerDeb({
             options: {
-                bin: 'MusicFree',
-                mimeType: ['x-scheme-handler/musicfree'],
+                bin: 'Music',
+                mimeType: ['x-scheme-handler/music'],
             },
         }),
         new MakerRpm({
             options: {
-                bin: 'MusicFree',
+                bin: 'Music',
             },
         }),
     ],

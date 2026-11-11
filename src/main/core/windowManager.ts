@@ -418,7 +418,7 @@ class WindowManager implements IWindowManager {
             ) {
                 e.preventDefault();
 
-                // https://github.com/maotoumao/MusicFreeDesktop/issues/412
+                // 上游 issue：MusicFreeDesktop/issues/412
                 // [Windows] 不用 hide() —— 在 Windows 上 hide() 一个 minimized 窗口会
                 // 让 Chromium GPU compositor surface 被释放，restore() 时无法重建，
                 // 表现为窗口框正常但内容空白（典型路径：最小化 → 缩略图 X → 托盘恢复）。

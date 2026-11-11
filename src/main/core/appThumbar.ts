@@ -128,7 +128,7 @@ class AppThumbar {
     /** 格式化歌曲标题 */
     private formatMusicTitle(musicItem?: IMusicItemSlim | null): string {
         if (!musicItem) {
-            return 'MusicFree';
+            return 'Music';
         }
         return musicItem.artist ? `${musicItem.title} - ${musicItem.artist}` : musicItem.title;
     }

@@ -43,8 +43,8 @@ jobs:
                   echo "branch=$BRANCH" >> $GITHUB_OUTPUT
                   echo "commit=$COMMIT" >> $GITHUB_OUTPUT
                   echo "tag=v$VERSION" >> $GITHUB_OUTPUT
-                  # Auto-detect prerelease from branch name
-                  if [[ "$BRANCH" == *"dev"* ]] || [[ "$BRANCH" == *"beta"* ]] || [[ "$BRANCH" == *"alpha"* ]]; then
+                  # Pre-release 按版本号判断（1.0.0-beta.x 等），与分支名无关
+                  if [[ "$VERSION" == *"-beta"* || "$VERSION" == *"-alpha"* || "$VERSION" == *"-rc"* ]]; then
                     echo "prerelease=true" >> $GITHUB_OUTPUT
                   else
                     echo "prerelease=false" >> $GITHUB_OUTPUT
@@ -86,12 +86,29 @@ jobs:
                     -f ref="refs/tags/${TAG}" \
                     -f sha="${COMMIT}"
 
+            - name: Sync release/version.json to master
+              env:
+                  GH_TOKEN: ${{ github.token }}
+              run: |
+                  jq --arg v "${{ steps.meta.outputs.version }}" '.version = $v' release/version.json > version.tmp
+                  CONTENT=$(base64 -w0 version.tmp)
+                  SHA=$(gh api "repos/${{ github.repository }}/contents/release/version.json?ref=master" --jq .sha || true)
+                  if [ -z "$SHA" ]; then
+                    echo "::warning::master 分支上没有 release/version.json，跳过同步"
+                    exit 0
+                  fi
+                  gh api -X PUT "repos/${{ github.repository }}/contents/release/version.json" \
+                    -f message="chore(release): sync version.json to ${{ steps.meta.outputs.version }}" \
+                    -f content="$CONTENT" \
+                    -f sha="$SHA" \
+                    -f branch=master
+
             - name: Create GitHub Draft Release
               env:
                   GH_TOKEN: ${{ github.token }}
               run: |
                   gh release create "${{ steps.meta.outputs.tag }}" \
-                    --title "MusicFree ${{ steps.meta.outputs.version }}" \
+                    --title "Music ${{ steps.meta.outputs.version }}" \
                     --notes-file release-notes.md \
                     --draft \
                     ${{ steps.meta.outputs.prerelease == 'true' && '--prerelease' || '' }} \

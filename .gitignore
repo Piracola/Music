@@ -90,3 +90,6 @@ typings/
 
 # Electron-Forge
 out/
+
+# 本地定制的酷我音源插件（不随主仓库分发，单独维护）
+plugin-kuwo/

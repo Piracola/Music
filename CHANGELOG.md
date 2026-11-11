@@ -10,7 +10,13 @@ The format is based on [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.
 
 ---
 
-## Unreleased
+## 1.0.0-beta.5 - 2026-11-11 · 预发布 Pre-release
+
+### 变更
+
+- 应用更名为 **Music**：应用标识、可执行文件名、安装包名、窗口标题与协议同步调整（保留 `musicfree://` 以兼容已有插件分享链接）。
+- 版本检查源、关于页、内置文档改为指向本项目仓库，不再读取上游的版本与下载地址。
+- 发布流程调整：预发布按版本号判断（`-beta`/`-alpha`/`-rc`），发版时自动把 `release/version.json` 同步到 `master` 供客户端检查更新。
 
 ### 新增
 
