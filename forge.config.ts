@@ -90,13 +90,15 @@ const config: ForgeConfig = {
                 mimeType: ['x-scheme-handler/music'],
             },
         }),
-        new MakerRpm({
-            // rpm 与 deb 在 CI 中并发写同一临时目录会互相踩踏，暂不产出 rpm
-            platforms: [],
-            options: {
-                bin: 'Music',
+        // 第二个参数是 platforms；传空数组即禁用（rpm 与 deb 在 CI 中并发写同一临时目录会互相踩踏）
+        new MakerRpm(
+            {
+                options: {
+                    bin: 'Music',
+                },
             },
-        }),
+            [],
+        ),
     ],
     plugins: [
         new AutoUnpackNativesPlugin({}),
