@@ -1,9 +1,13 @@
 {
-  "version": "0.0.8",
+  "version": "1.0.0-beta.5",
   "changeLog": [
-    "1. 【修复】修复了一些可能导致白屏的问题"
+    "1. 【新增】插件支持网页登录，登录后自动回填凭证，免手抄 Cookie",
+    "2. 【优化】推荐歌单页改为分区展示，歌单详情补播放量与搜索连翻",
+    "3. 【新增】下载设置支持「下载间隔」与随机抖动",
+    "4. 【修复】更换插件构建不再清空用户变量，清理已卸载插件的残留记录",
+    "5. 【变更】应用更名为 Music，版本检查与关于页指向本项目仓库"
   ],
   "download": [
-    "https://r0rvr854dd1.feishu.cn/drive/folder/IrVEfD67KlWZGkdqwjecLHFNnBb?from=from_copylink"
+    "https://github.com/Piracola/Music/releases"
   ]
 }
