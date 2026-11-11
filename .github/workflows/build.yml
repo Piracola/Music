@@ -44,7 +44,7 @@ jobs:
                   choco install innosetup --no-progress -y
                   # Inno Setup 官方不附中文语言文件，CI 里现取一份放进 Languages 目录
                   $langDir = "${env:ProgramFiles(x86)}\Inno Setup 6\Languages"
-                  Invoke-WebRequest -Uri "https://raw.githubusercontent.com/jrsoftware/issrc/main/Files/Languages/Unofficial/ChineseSimplified.isl" -OutFile (Join-Path $langDir "ChineseSimplified.isl")
+                  Invoke-WebRequest -Uri "https://raw.githubusercontent.com/jrsoftware/issrc/main/Files/Languages/ChineseSimplified.isl" -OutFile (Join-Path $langDir "ChineseSimplified.isl")
             - name: Build installer
               shell: pwsh
               run: |
@@ -142,7 +142,7 @@ jobs:
               run: |
                   VERSION=$(node -p "require('./package.json').version")
                   echo "VERSION=$VERSION" >> $GITHUB_ENV
-            - run: pnpm run make -- --targets=@electron-forge/maker-deb
+            - run: pnpm run make
             - name: Rename DEB
               run: |
                   DEB_FILE=$(find ./out/make/deb/x64/ -name "*.deb" | head -1)

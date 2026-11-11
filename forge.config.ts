@@ -91,6 +91,8 @@ const config: ForgeConfig = {
             },
         }),
         new MakerRpm({
+            // rpm 与 deb 在 CI 中并发写同一临时目录会互相踩踏，暂不产出 rpm
+            platforms: [],
             options: {
                 bin: 'Music',
             },
